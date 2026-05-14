@@ -1,0 +1,14 @@
+langchain
+langchain-community
+langgraph
+duckdb
+fastapi
+uvicorn
+faiss-cpu
+openai
+python-dotenv
+pydantic
+pandas
+pyarrow
+sentence-transformers
+pytest

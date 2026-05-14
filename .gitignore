@@ -1,0 +1,10 @@
+data/
+*.parquet
+.env
+__pycache__/
+*.pyc
+.venv/
+faiss_index/
+chroma_db/
+eval_results/
+*.png
