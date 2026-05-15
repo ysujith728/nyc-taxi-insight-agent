@@ -1,22 +1,18 @@
-from rag_tool import search_docs
-from stats_tool import compute_stats
-
+from rag_tool import doc_search_tool
+from stats_tool import stats_tool
 
 print("\n=== RAG TEST ===\n")
 
-results = search_docs("What is passenger_count?")
-
-for r in results:
-    print(r)
-    print("-" * 50)
-
+print(
+    doc_search_tool.invoke(
+        {"question": "What is RateCodeID?"}
+    )
+)
 
 print("\n=== STATS TEST ===\n")
 
-data = {
-    "fare_amount": [12, 25, 18, 40, 100]
-}
-
-stats = compute_stats(data, "fare_amount")
-
-print(stats)
+print(
+    stats_tool.invoke(
+        {"values": [12, 25, 37, 100, 21]}
+    )
+)

@@ -1,34 +1,61 @@
-import pandas as pd
+from langchain_core.tools import tool
+import statistics
+import math
+
+# -----------------------------
+# LangChain Tool
+# -----------------------------
+
+@tool
+def stats_tool(values: list[float]) -> str:
+    """
+    Compute basic statistics for a list of numeric values.
+    Returns count, mean, median, min, max, and standard deviation.
+    """
+
+    try:
+
+        if not values:
+            return "ERROR: Empty list provided."
+
+        result = {
+            "count": len(values),
+            "mean": statistics.mean(values),
+            "median": statistics.median(values),
+            "min": min(values),
+            "max": max(values),
+            "std_dev": statistics.stdev(values)
+            if len(values) > 1 else 0
+        }
+
+        return str(result)
+
+    except Exception as e:
+        return f"ERROR: {str(e)}"
 
 
-def compute_stats(data, column_name):
+# -----------------------------
+# Local testing
+# -----------------------------
 
-    df = pd.DataFrame(data)
-
-    if column_name not in df.columns:
-        return f"Column '{column_name}' not found."
-
-    col = df[column_name]
-
-    stats = {
-        "count": int(col.count()),
-        "mean": float(col.mean()),
-        "median": float(col.median()),
-        "min": float(col.min()),
-        "max": float(col.max()),
-        "std_dev": float(col.std())
-    }
-
-    return stats
-
-
-# Test
 if __name__ == "__main__":
 
-    sample_data = {
-        "fare_amount": [10, 20, 15, 30, 25, 100]
-    }
+    print("\nStats Tool Ready!")
 
-    result = compute_stats(sample_data, "fare_amount")
+    raw = input(
+        "\nEnter numbers separated by commas:\n"
+    )
 
-    print(result)
+    try:
+        values = [
+            float(x.strip())
+            for x in raw.split(",")
+        ]
+
+        result = stats_tool.invoke({"values": values})
+
+        print("\nRESULT:\n")
+        print(result)
+
+    except Exception as e:
+        print(f"\nERROR: {e}")

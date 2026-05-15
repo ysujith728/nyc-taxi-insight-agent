@@ -1,10 +1,17 @@
-data/
-*.parquet
+# Environment Variables
 .env
+
+# Python Cache
 __pycache__/
 *.pyc
+
+# Virtual Environment
 .venv/
-faiss_index/
+
+# Ignore parquet datasets
+*.parquet
+
+# Optional generated folders
 chroma_db/
 eval_results/
 *.png
