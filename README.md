@@ -1,4 +1,3 @@
-# MAIN README.md
 
 # NYC Taxi Insight Agent
 
