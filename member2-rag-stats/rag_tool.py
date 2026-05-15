@@ -1,33 +1,93 @@
-from vector_store import load_vector_store
+from langchain_core.tools import tool
+from langchain_community.vectorstores import FAISS
+from langchain_huggingface import HuggingFaceEmbeddings
+from pathlib import Path
 
-# Load vector DB
-vectorstore = load_vector_store()
+# -----------------------------
+# Load embeddings model
+# -----------------------------
 
-# Create retriever
-retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+embedding_model = HuggingFaceEmbeddings(
+    model_name="sentence-transformers/all-MiniLM-L6-v2"
+)
+
+# -----------------------------
+# Load FAISS vector store
+# -----------------------------
+
+FAISS_PATH = (
+    Path(__file__).resolve().parent.parent
+    / "faiss_index"
+)
+
+vectorstore = FAISS.load_local(
+    str(FAISS_PATH),
+    embedding_model,
+    allow_dangerous_deserialization=True
+)
+
+# -----------------------------
+# LangChain Tool
+# -----------------------------
+
+@tool
+def doc_search_tool(question: str) -> str:
+    """
+    Search NYC taxi documentation using semantic retrieval.
+    Returns relevant document chunks.
+    """
+
+    try:
+
+        docs_with_scores = vectorstore.similarity_search_with_score(
+            question,
+            k=3
+        )
+
+        # -----------------------------
+        # Filter low relevance matches
+        # -----------------------------
+
+        filtered_docs = []
+
+        for doc, score in docs_with_scores:
+
+            # Lower score = better similarity
+            if score < 1.2:
+                filtered_docs.append(doc)
+
+        if not filtered_docs:
+            return "No relevant documents found."
+
+        results = []
+
+        for i, doc in enumerate(filtered_docs, start=1):
+
+            results.append(
+                f"\n--- Chunk {i} ---\n{doc.page_content}"
+            )
+
+        return "\n".join(results)
+
+    except Exception as e:
+        return f"ERROR: {str(e)}"
 
 
-def search_docs(query):
+# -----------------------------
+# Local testing
+# -----------------------------
 
-    docs = retriever.invoke(query)
-
-    results = []
-
-    for doc in docs:
-        results.append(doc.page_content)
-
-    return results
-
-
-# Test
 if __name__ == "__main__":
 
-    question = "What is VendorID?"
+    print("\nRAG Tool Ready!")
 
-    answer = search_docs(question)
+    question = input(
+        "\nEnter Question:\n"
+    )
 
-    print("\nRetrieved Chunks:\n")
+    result = doc_search_tool.invoke(
+        {"question": question}
+    )
 
-    for item in answer:
-        print(item)
-        print("-" * 50)
+    print("\nRESULT:\n")
+    print(result)

@@ -1,27 +1,61 @@
+from langchain_core.tools import tool
 import pandas as pd
+from pathlib import Path
 
-# Load lookup CSV
-zones = pd.read_csv("data/lookup/taxi_zone_lookup.csv")
+# -----------------------------
+# Load Taxi Zone Lookup CSV
+# -----------------------------
 
-print("Zone Lookup Tool Ready!")
+CSV_PATH = (
+    Path(__file__).resolve().parent.parent
+    / "data"
+    / "lookup"
+    / "taxi_zone_lookup.csv"
+)
 
+zones_df = pd.read_csv(CSV_PATH)
 
-def get_zone_id(zone_name):
+# -----------------------------
+# LangChain Tool
+# -----------------------------
+
+@tool
+def zone_lookup_tool(zone_name: str) -> str:
     """
-    Returns LocationID for a given zone name.
+    Lookup NYC taxi zone information by zone name.
+    Returns matching LocationID, Borough, and Zone.
     """
 
-    result = zones[
-        zones["Zone"].str.contains(zone_name, case=False, na=False)
-    ]
+    try:
 
-    return result[["LocationID", "Zone", "Borough"]]
+        matches = zones_df[
+            zones_df["Zone"].str.contains(
+                zone_name,
+                case=False,
+                na=False
+            )
+        ]
+
+        if matches.empty:
+            return f"No matching zone found for '{zone_name}'."
+
+        return matches.head(10).to_markdown(index=False)
+
+    except Exception as e:
+        return f"ERROR: {str(e)}"
 
 
-# Example search
-search = "JFK"
+# -----------------------------
+# Local testing
+# -----------------------------
 
-result = get_zone_id(search)
+if __name__ == "__main__":
 
-print("\nSEARCH RESULT:")
-print(result)
+    print("\nZone Lookup Tool Ready!")
+
+    zone = input("\nEnter Zone Name:\n")
+
+    result = zone_lookup_tool.invoke(zone)
+
+    print("\nRESULT:\n")
+    print(result)

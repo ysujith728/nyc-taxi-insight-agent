@@ -1,54 +1,35 @@
-﻿# Member 1 - Data Infrastructure
-# Member 1 — Data Infrastructure & SQL Analytics
+﻿# MEMBER 1 README.md
+
+# Member 1 — Data Infrastructure
 
 ## Overview
 
-This module implements the core data infrastructure layer for the **NYC Taxi Insight Agent** project.
+This module handles all structured data operations for the NYC Taxi Insight Agent.
 
-The goal of this component is to:
+Responsibilities include:
 
-* Load NYC Taxi parquet datasets
-* Query large-scale trip data using DuckDB
-* Perform SQL-based analytics
-* Provide reusable SQL execution tools
-* Support zone-based querying
-* Prepare infrastructure for AI-agent integration
-
----
-
-# Technologies Used
-
-* Python
-* DuckDB
-* Pandas
-* Parquet
-* Git & GitHub
+* DuckDB integration
+* SQL query execution
+* Taxi zone lookup
+* Dynamic query handling
+* SQL safety validation
 
 ---
 
-# Folder Structure
+# Files
 
-```text
-member1-data-infra/
-│
-├── duckdb_setup.py
-├── sql_tool.py
-├── zone_lookup_tool.py
-├── combined_query.py
-└── test.txt
-```
+| File                  | Purpose                                   |
+| --------------------- | ----------------------------------------- |
+| `duckdb_setup.py`     | Initializes DuckDB and validates datasets |
+| `sql_tool.py`         | Executes validated SQL queries            |
+| `zone_lookup_tool.py` | Searches taxi zones and LocationIDs       |
+| `combined_query.py`   | Combines zone lookup with SQL analytics   |
 
 ---
 
-# Dataset Setup
+# Datasets Used
 
-## Taxi Trip Data
-
-Downloaded NYC TLC Yellow Taxi parquet datasets:
-
-* yellow_tripdata_2024-10.parquet
-* yellow_tripdata_2024-11.parquet
-* yellow_tripdata_2024-12.parquet
+## Yellow Taxi Trip Data
 
 Stored in:
 
@@ -56,206 +37,152 @@ Stored in:
 data/parquet/
 ```
 
-## Zone Lookup Dataset
+Example files:
 
-Downloaded official NYC taxi zone lookup CSV:
+* yellow_tripdata_2024-01.parquet
+* yellow_tripdata_2024-02.parquet
+* yellow_tripdata_2024-03.parquet
+
+---
+
+## Taxi Zone Lookup CSV
+
+Stored in:
 
 ```text
-data/lookup/taxi_zone_lookup.csv
+data/lookup/
 ```
 
-Used for mapping:
+File:
 
 ```text
-Zone Name → LocationID
-```
-
-Example:
-
-```text
-JFK Airport → 132
+taxi_zone_lookup.csv
 ```
 
 ---
 
 # Features Implemented
 
-## 1. DuckDB Setup
+## 1. DuckDB Integration
 
-File:
+DuckDB is used for efficient SQL analytics directly over parquet files.
 
-```text
-duckdb_setup.py
-```
+Benefits:
 
-Features:
-
-* Creates in-memory DuckDB connection
-* Reads multiple parquet files directly
-* Creates SQL view named `trips`
-* Runs analytics queries on millions of records
-
-Example queries:
-
-* Total trips
-* Average fare
-* Highest fare
-* Average tip
-* Payment statistics
+* no database server required
+* fast analytical queries
+* parquet-native execution
 
 ---
 
 ## 2. SQL Query Tool
 
-File:
+The `sql_query_tool`:
 
-```text
-sql_tool.py
-```
+* accepts dynamic SQL queries
+* restricts unsafe queries
+* supports SELECT/WITH statements only
+* returns results in markdown format
 
-Features:
+Example:
 
-* Reusable SQL execution function
-* Dynamic query execution
-* Returns pandas DataFrame output
-* Error handling for invalid SQL
-
-Function:
-
-```python
-run_sql_query(query)
+```sql
+SELECT AVG(fare_amount) AS avg_fare FROM trips;
 ```
 
 ---
 
-## 3. Zone Lookup Tool
+## 3. SQL Safety Validation
 
-File:
+Blocked queries:
 
-```text
-zone_lookup_tool.py
+```sql
+DROP TABLE trips;
 ```
 
-Features:
+Allowed queries:
 
-* Loads taxi zone lookup CSV
-* Searches zones dynamically
-* Converts zone names into Location IDs
+```sql
+SELECT * FROM trips LIMIT 5;
+```
+
+---
+
+## 4. Zone Lookup Tool
+
+The `zone_lookup_tool` resolves human-readable place names.
 
 Example:
 
 ```text
-Input: JFK
-Output: LocationID 132
+JFK
+```
+
+Returns:
+
+```text
+LocationID: 132
+Borough: Queens
 ```
 
 ---
 
-## 4. Combined Query Workflow
+# How to Run
 
-File:
+## Run DuckDB Setup
 
-```text
-combined_query.py
-```
-
-Features:
-
-* Combines zone lookup + SQL analytics
-* Accepts dynamic user input
-* Builds SQL queries dynamically
-* Performs location-based analytics
-
-Example Query:
-
-```text
-Average fare from JFK pickups
-```
-
-Workflow:
-
-```text
-User Input
-    ↓
-Zone Lookup Tool
-    ↓
-LocationID
-    ↓
-SQL Query Tool
-    ↓
-DuckDB Analytics
-    ↓
-Result
+```bash
+python member1-data-infra/duckdb_setup.py
 ```
 
 ---
 
-# Data Cleaning Implemented
+## Run SQL Tool
 
-Filtering logic added to remove unrealistic values:
+```bash
+python member1-data-infra/sql_tool.py
+```
+
+---
+
+## Run Zone Lookup Tool
+
+```bash
+python member1-data-infra/zone_lookup_tool.py
+```
+
+---
+
+## Run Combined Query Tool
+
+```bash
+python member1-data-infra/combined_query.py
+```
+
+---
+
+# Example Queries
+
+## SQL Example
 
 ```sql
-fare_amount > 0
-fare_amount < 500
-tip_amount < 200
+SELECT COUNT(*) AS total_trips FROM trips;
 ```
-
-This improves analytics quality and removes corrupted records.
 
 ---
 
-# Sample Analytics Output
+## SQL Average Example
+
+```sql
+SELECT AVG(fare_amount) AS avg_fare FROM trips;
+```
+
+---
+
+## Zone Example
 
 ```text
-TOTAL TRIPS:
-11148511
-
-AVERAGE FARE:
-20.30
-
-AVERAGE TIP:
-4.72
+Times
 ```
 
 ---
-
-# Future Improvements
-
-Planned enhancements:
-
-* LangChain tool integration
-* Query validation layer
-* SQL safety filtering
-* Modular database utilities
-* Unit testing
-* Query optimization
-
----
-
-# Git Workflow Used
-
-* Feature branch development
-* Git commits
-* Pull requests
-* Merge workflow
-
-Branch used:
-
-```text
-feat/bhavith-sql-tool
-```
-
----
-
-# Contribution Summary
-
-Member 1 completed:
-
-* Data infrastructure setup
-* DuckDB integration
-* SQL analytics pipeline
-* Reusable SQL query tool
-* Zone lookup tool
-* Multi-tool query workflow
-* Data cleaning filters
-* GitHub collaboration workflow
