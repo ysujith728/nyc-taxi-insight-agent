@@ -1,5 +1,7 @@
 langchain
 langchain-community
+langchain-huggingface
+langchain-text-splitters
 langgraph
 duckdb
 fastapi
@@ -9,6 +11,8 @@ openai
 python-dotenv
 pydantic
 pandas
+numpy
 pyarrow
 sentence-transformers
+pypdf
 pytest
