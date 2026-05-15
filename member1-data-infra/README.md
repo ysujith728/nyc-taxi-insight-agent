@@ -1,4 +1,3 @@
-﻿# MEMBER 1 README.md
 
 # Member 1 — Data Infrastructure
 
